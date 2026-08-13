@@ -1,0 +1,14 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "doc2md",
+  "compatibility_date": "2026-08-13",
+  "assets": {
+    "directory": "./dist"
+  },
+  "routes": [
+    {
+      "pattern": "doc2md.itea.fit",
+      "custom_domain": true
+    }
+  ]
+}
