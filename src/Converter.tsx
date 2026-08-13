@@ -179,6 +179,7 @@ function Converter({
           className="visually-hidden"
           type="file"
           accept={accept}
+          aria-label="Choose a document to convert to Markdown"
           onChange={(event) => {
             const nextFile = event.target.files?.[0]
             if (nextFile) void processFile(nextFile)
