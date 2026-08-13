@@ -11,14 +11,18 @@ type PendingConversion = {
   reject: (error: Error) => void
 }
 
+export type ConversionError = Error & {
+  code?: string
+}
+
 let worker: Worker | undefined
 let nextRequestId = 0
 const pending = new Map<number, PendingConversion>()
 
-function conversionError(message: string, code?: string) {
-  const error = new Error(message)
+function conversionError(message: string, code?: string): ConversionError {
+  const error = new Error(message) as ConversionError
   if (code) {
-    Object.assign(error, { code })
+    error.code = code
   }
   return error
 }
@@ -43,6 +47,16 @@ function getWorker() {
     pending.delete(response.id)
 
     if (response.ok) {
+      if (!response.markdown.trim()) {
+        request.reject(
+          conversionError(
+            'No extractable text was found in this document.',
+            'empty',
+          ),
+        )
+        return
+      }
+
       request.resolve(response.markdown)
       return
     }
