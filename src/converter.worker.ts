@@ -31,7 +31,7 @@ scope.addEventListener('message', async (event: MessageEvent<WorkerRequest>) => 
 
     scope.postMessage({ id, ok: true, markdown })
   } catch (cause) {
-    const error = cause instanceof Error ? (cause as AnyDocError) : new Error(String(cause))
+    const error = (cause instanceof Error ? cause : new Error(String(cause))) as AnyDocError
 
     scope.postMessage({
       id,
