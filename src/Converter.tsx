@@ -1,5 +1,5 @@
 import { DragEvent, useRef, useState } from 'react'
-import { convertDocument } from './lib/converter'
+import { convertDocument, type ConversionError } from './lib/converter'
 
 const DEFAULT_ACCEPTED_EXTENSIONS = [
   '.doc',
@@ -33,6 +33,8 @@ type ConverterProps = {
   dropLabel?: string
 }
 
+type ConversionStatus = 'idle' | 'converting' | 'success' | 'error'
+
 function formatBytes(bytes: number) {
   if (bytes < 1024) return `${bytes} B`
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
@@ -54,6 +56,40 @@ function acceptsFile(file: File, accept: string) {
   return extensions.some((extension) => file.name.toLowerCase().endsWith(extension))
 }
 
+function conversionErrorMessage(cause: unknown) {
+  const error = (cause instanceof Error ? cause : new Error(String(cause))) as ConversionError
+
+  switch (error.code) {
+    case 'empty':
+      return 'No extractable text was found. This file may contain only images or scanned content. OCR is not supported yet.'
+    case 'encrypted':
+      return 'This document is password-protected or encrypted. Remove the protection and try again.'
+    case 'unsupported':
+      return 'This document cannot be converted locally. Image-only or scanned content may require OCR, which is not supported yet.'
+    case 'malformed':
+      return 'This document appears to be damaged or structurally unreadable.'
+    case 'resourceLimit':
+      return 'This document exceeds a conversion safety limit. Try a smaller or simpler file.'
+    case 'missingPart':
+      return 'This document is incomplete or is missing content required for conversion.'
+    default:
+      return error.message || 'Unable to convert this document.'
+  }
+}
+
+function statusLabel(status: ConversionStatus) {
+  switch (status) {
+    case 'converting':
+      return 'Converting'
+    case 'success':
+      return 'Ready'
+    case 'error':
+      return 'Failed'
+    default:
+      return ''
+  }
+}
+
 function Converter({
   accept = DEFAULT_ACCEPTED_EXTENSIONS,
   formats = DEFAULT_FORMATS,
@@ -63,31 +99,31 @@ function Converter({
   const [file, setFile] = useState<File | null>(null)
   const [markdown, setMarkdown] = useState('')
   const [error, setError] = useState('')
-  const [converting, setConverting] = useState(false)
+  const [status, setStatus] = useState<ConversionStatus>('idle')
   const [dragging, setDragging] = useState(false)
   const [copied, setCopied] = useState(false)
 
   async function processFile(nextFile: File) {
     setFile(nextFile)
     setMarkdown('')
+    setError('')
     setCopied(false)
 
     if (!acceptsFile(nextFile, accept)) {
       setError(`Choose a supported file: ${formats}.`)
+      setStatus('error')
       return
     }
 
-    setError('')
-    setConverting(true)
+    setStatus('converting')
 
     try {
       const output = await convertDocument(nextFile)
       setMarkdown(output)
+      setStatus('success')
     } catch (cause) {
-      const message = cause instanceof Error ? cause.message : String(cause)
-      setError(message || 'Unable to convert this document.')
-    } finally {
-      setConverting(false)
+      setError(conversionErrorMessage(cause))
+      setStatus('error')
     }
   }
 
@@ -133,7 +169,7 @@ function Converter({
         <div className="file-icon" aria-hidden="true">
           MD
         </div>
-        <h2>{converting ? 'Converting document…' : dropLabel}</h2>
+        <h2>{status === 'converting' ? 'Converting document…' : dropLabel}</h2>
         <p>or choose a file from your device</p>
         <button className="primary-button" type="button" onClick={() => inputRef.current?.click()}>
           Choose file
@@ -152,14 +188,14 @@ function Converter({
         <p className="formats">{formats}</p>
       </div>
 
-      {file && (
+      {file && status !== 'idle' && (
         <div className="file-row">
           <div>
             <strong>{file.name}</strong>
             <span>{formatBytes(file.size)}</span>
           </div>
-          <span className={error ? 'status status-error' : 'status'}>
-            {converting ? 'Converting' : error ? 'Failed' : 'Ready'}
+          <span className={status === 'error' ? 'status status-error' : 'status'}>
+            {statusLabel(status)}
           </span>
         </div>
       )}
@@ -171,7 +207,7 @@ function Converter({
         </div>
       )}
 
-      {markdown && (
+      {status === 'success' && markdown && (
         <div className="output-panel">
           <div className="output-header">
             <div>
