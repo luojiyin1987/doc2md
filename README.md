@@ -28,6 +28,30 @@ Build the production bundle with:
 npm run build
 ```
 
+## Cloudflare Workers deployment
+
+The production site is configured as a Cloudflare Workers Static Assets project. `wrangler.jsonc` uploads the Vite `dist/` directory and maps the Worker to the `doc2md.itea.fit` Custom Domain.
+
+For a manual deployment:
+
+```bash
+npm install
+npm run build
+npx wrangler login
+npm run deploy
+```
+
+For automatic deployment with Cloudflare Workers Builds, connect the GitHub repository in **Workers & Pages → Import a repository** and use:
+
+- Production branch: `main`
+- Build command: `npm run build`
+- Deploy command: `npm run deploy`
+- Root directory: `/`
+
+Cloudflare handles non-production branch previews through Workers Builds when preview builds are enabled. The Wrangler configuration intentionally does not use SPA fallback so future SEO pages can be emitted as real static HTML files and unknown paths keep proper `404` behavior.
+
+CI also runs `wrangler deploy --dry-run` after the production build to validate the deployment configuration without publishing.
+
 ## Architecture
 
 ```text
