@@ -31,6 +31,21 @@
   background: #fff;
 }
 
+/* Keep small text and accent labels above WCAG AA contrast on the warm page backgrounds. */
+.brand span,
+.file-icon,
+.trust-grid article > span {
+  color: #b23a24;
+}
+
+.eyebrow,
+.drop-zone > p:not(.formats),
+.formats,
+.file-row > div span,
+footer {
+  color: #68645c;
+}
+
 @media (max-width: 760px) {
   .tool-links {
     grid-template-columns: 1fr;
