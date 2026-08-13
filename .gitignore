@@ -7,3 +7,11 @@ dist/
 .env
 .env.*
 !.env.example
+
+# Generated SEO entry pages and discovery files.
+/pdf-to-markdown/
+/docx-to-markdown/
+/pptx-to-markdown/
+/excel-to-markdown/
+/public/sitemap.xml
+/public/robots.txt

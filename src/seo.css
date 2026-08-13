@@ -1,0 +1,38 @@
+.related-tools {
+  margin: 0 0 64px;
+}
+
+.related-tools > h2 {
+  margin: 0 0 18px;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  letter-spacing: -0.035em;
+}
+
+.tool-links {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.tool-links a {
+  display: flex;
+  align-items: center;
+  min-height: 58px;
+  padding: 14px 16px;
+  border: 1px solid #d7d3c9;
+  border-radius: 12px;
+  color: #282722;
+  background: rgba(255, 255, 255, 0.55);
+  font-weight: 750;
+  text-decoration: none;
+}
+
+.tool-links a:hover {
+  background: #fff;
+}
+
+@media (max-width: 760px) {
+  .tool-links {
+    grid-template-columns: 1fr;
+  }
+}

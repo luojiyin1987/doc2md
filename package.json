@@ -4,8 +4,9 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc --noEmit && vite build",
+    "generate:seo": "node scripts/generate-seo.mjs",
+    "dev": "npm run generate:seo && vite",
+    "build": "npm run generate:seo && tsc --noEmit && vite build",
     "preview": "vite preview",
     "deploy": "wrangler deploy"
   },
